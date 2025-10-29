@@ -1,0 +1,179 @@
+PROTOBUF DUMP - 20 jogos encontrados
+================================================================================
+
+JOGO 1: Big Bass Halloween
+--------------------------------------------------------------------------------
+  field1: -473871622
+  field2: Big Bass Halloween
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/big-bass-halloween.webp
+  field5: 20536
+
+JOGO 2: Big Bass - Hold & Spinner
+--------------------------------------------------------------------------------
+  field1: 189625820
+  field2: Big Bass - Hold & Spinner
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/big-bass---hold-spinner.webp
+  field5: 16430
+  field6: 395
+
+JOGO 3: Fortune Dragon
+--------------------------------------------------------------------------------
+  field1: -213026214
+  field2: Fortune Dragon
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/fortune-dragon.webp
+  field5: 14191
+  field6: 91
+
+JOGO 4: PIZZA! PIZZA? PIZZA!
+--------------------------------------------------------------------------------
+  field1: -651165863
+  field2: PIZZA! PIZZA? PIZZA!
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/pizza-pizza-pizza-.webp
+  field5: 12150
+  field6: 164
+
+JOGO 5: Big Bass Amazon Xtreme
+--------------------------------------------------------------------------------
+  field1: 1232650101
+  field2: Big Bass Amazon Xtreme
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/big-bass-amazon-xtreme.webp
+  field5: 11515
+
+JOGO 6: Spaceman
+--------------------------------------------------------------------------------
+  field1: -685179047
+  field2: Spaceman
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/spaceman.webp
+  field5: 11183
+  field6: -8
+
+JOGO 7: Fortune Ox
+--------------------------------------------------------------------------------
+  field1: 642611826
+  field2: Fortune Ox
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/fortune-ox.webp
+  field5: 10444
+  field6: 126
+
+JOGO 8: Dragon Tiger
+--------------------------------------------------------------------------------
+  field1: -1722368022
+  field2: Dragon Tiger
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/dragon-tiger.webp
+  field5: 10224
+  field6: -8
+
+JOGO 9: High Flyer
+--------------------------------------------------------------------------------
+  field1: -1821516752
+  field2: High Flyer
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/high-flyer.webp
+  field5: 8750
+  field6: -2
+
+JOGO 10: Cash Mania
+--------------------------------------------------------------------------------
+  field1: -229803430
+  field2: Cash Mania
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/cash-mania.webp
+  field5: 8026
+  field6: 113
+
+JOGO 11: Sugar Rush 1000
+--------------------------------------------------------------------------------
+  field1: -2096182879
+  field2: Sugar Rush 1000
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/sugar-rush-1000.webp
+  field5: 7530
+  field6: -8
+
+JOGO 12: Lucky Neko
+--------------------------------------------------------------------------------
+  field1: 1129151090
+  field2: Lucky Neko
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/lucky-neko.webp
+  field5: 7244
+
+JOGO 13: Fortune Rabbit
+--------------------------------------------------------------------------------
+  field1: 659389042
+  field2: Fortune Rabbit
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/fortune-rabbit.webp
+  field5: 6231
+  field6: -4
+
+JOGO 14: Bigger Bass Blizzard - Christmas Catch
+--------------------------------------------------------------------------------
+  field1: -680722599
+  field2: Bigger Bass Blizzard - Christmas Catch
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/bigger-bass-blizzard---christmas-catch.webp
+  field5: 5943
+  field6: 30
+
+JOGO 15: Fortune Mouse
+--------------------------------------------------------------------------------
+  field1: 642611826
+  field2: Fortune Mouse
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/fortune-mouse.webp
+  field5: 5608
+  field6: -7
+
+JOGO 16: Fortune Tiger
+--------------------------------------------------------------------------------
+  field1: 709720690
+  field2: Fortune Tiger
+  field3: <binary 18 bytes: 1207504720536f66742a0770675f736f6674>
+  field4: /static/casino/covers/pg_soft/fortune-tiger.webp
+  field5: 4836
+  field6: 27
+
+JOGO 17: Sweet Bonanza 1000
+--------------------------------------------------------------------------------
+  field1: -298418884
+  field2: Sweet Bonanza 1000
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/sweet-bonanza-1000.webp
+  field5: 4308
+  field6: -8
+
+JOGO 18: Sugar Rush
+--------------------------------------------------------------------------------
+  field1: -1859522599
+  field2: Sugar Rush
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/sugar-rush.webp
+  field5: 4111
+  field6: 59
+
+JOGO 19: Gates of Olympus
+--------------------------------------------------------------------------------
+  field1: -676462759
+  field2: Gates of Olympus
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/gates-of-olympus.webp
+  field5: 3397
+  field6: -8
+
+JOGO 20: Gates of Olympus 1000
+--------------------------------------------------------------------------------
+  field1: 98417400
+  field2: Gates of Olympus 1000
+  field3: <binary 31 bytes: 120e507261676d6174696320506c61792a0d707261676d61746963706c6179>
+  field4: /static/casino/covers/pragmaticplay/gates-of-olympus-1000.webp
+  field5: 2989
+

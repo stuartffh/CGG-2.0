@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm start)",
+      "Bash(npm run dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(node test-raw-buffer.js:*)",
+      "Bash(curl:*)",
+      "Bash(node analyze-rtp-formula.js:*)",
+      "Bash(node dump-protobuf.js:*)",
+      "Bash(node test-protobuf-decode.js:*)",
+      "Bash(node debug-protobuf.js:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
