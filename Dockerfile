@@ -65,7 +65,9 @@ COPY frontend/index.html ./frontend/
 
 # Instala apenas vite para preview (produção)
 WORKDIR /app/frontend
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production \
+    && npm install --no-save @vitejs/plugin-react \
+    && npm cache clean --force
 
 # Volta para diretório raiz
 WORKDIR /app

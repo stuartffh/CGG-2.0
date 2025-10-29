@@ -61,7 +61,7 @@ echo "Waiting for backend to initialize..."
 sleep 5
 
 # Verifica se o backend está rodando
-if ! kill -0 $BACKEND_PID 2>/dev/null; then
+if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
     echo "ERROR: Backend failed to start!"
     cat /app/logs/backend.log
     exit 1
@@ -73,12 +73,24 @@ echo "Starting frontend on port ${FRONTEND_PORT}..."
 cd /app/frontend
 
 # Instala Vite se não estiver disponível
+FRONTEND_INSTALL_LOG="/app/logs/frontend-install.log"
+
 echo "Checking Vite availability..."
 if ! npx vite --version >/dev/null 2>&1; then
     echo "Installing Vite runtime dependency..."
-    npm install --no-save vite@latest >/app/logs/frontend-install.log 2>&1 || {
+    npm install --no-save vite@latest >"$FRONTEND_INSTALL_LOG" 2>&1 || {
         echo "ERROR: Failed to install Vite runtime dependency!"
-        cat /app/logs/frontend-install.log
+        cat "$FRONTEND_INSTALL_LOG"
+        exit 1
+    }
+fi
+
+echo "Ensuring @vitejs/plugin-react is available..."
+if ! npm ls @vitejs/plugin-react >/dev/null 2>&1; then
+    echo "Installing @vitejs/plugin-react runtime dependency..."
+    npm install --no-save @vitejs/plugin-react >"$FRONTEND_INSTALL_LOG" 2>&1 || {
+        echo "ERROR: Failed to install @vitejs/plugin-react runtime dependency!"
+        cat "$FRONTEND_INSTALL_LOG"
         exit 1
     }
 fi
@@ -112,7 +124,7 @@ echo "Frontend started (PID: $FRONTEND_PID)"
 sleep 5
 
 # Verifica se o frontend está rodando
-if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+if ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
     echo "ERROR: Frontend failed to start!"
     echo "Frontend logs:"
     cat /app/logs/frontend.log
@@ -137,9 +149,9 @@ tail -f /app/logs/backend.log /app/logs/frontend.log &
 TAIL_PID=$!
 
 # Aguarda os processos principais
-wait $BACKEND_PID $FRONTEND_PID
+wait "$BACKEND_PID" "$FRONTEND_PID"
 
 # Limpa tail se os processos principais terminarem
-kill $TAIL_PID 2>/dev/null || true
+kill "$TAIL_PID" 2>/dev/null || true
 
 echo "All services stopped"
