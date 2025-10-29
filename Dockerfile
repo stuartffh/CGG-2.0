@@ -34,6 +34,15 @@ RUN npm ci
 # ==================== BUILD FRONTEND ====================
 FROM frontend-deps AS frontend-build
 
+# Argumentos de build para variáveis de ambiente do frontend
+# Estes devem ser definidos no Easypanel ou passados via --build-arg
+ARG VITE_API_URL
+ARG VITE_BACKEND_DOMAIN
+
+# Exporta as variáveis para o processo de build do Vite
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_BACKEND_DOMAIN=$VITE_BACKEND_DOMAIN
+
 # Copia código fonte
 COPY frontend/ ./
 

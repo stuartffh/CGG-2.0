@@ -5,7 +5,34 @@ import { ConnectionStatus } from './components/ConnectionStatus';
 import { Search, Filter, BarChart3 } from 'lucide-react';
 import './styles/App.css';
 
-const WS_URL = 'ws://localhost:3001';
+// Função para construir a URL do WebSocket baseada nas variáveis de ambiente
+const getWebSocketUrl = () => {
+  // Se VITE_API_URL estiver definida, use-a diretamente
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Se VITE_BACKEND_DOMAIN estiver definida, construa a URL
+  if (import.meta.env.VITE_BACKEND_DOMAIN) {
+    const domain = import.meta.env.VITE_BACKEND_DOMAIN;
+    // Detecta se estamos em HTTPS para usar WSS, senão usa WS
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${domain}`;
+  }
+
+  // Fallback: tenta usar a mesma origem (same-origin) em produção
+  if (import.meta.env.PROD) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}`;
+  }
+
+  // Desenvolvimento: usa localhost
+  return 'ws://localhost:3001';
+};
+
+const WS_URL = getWebSocketUrl();
+
+console.log('🔌 WebSocket URL:', WS_URL);
 
 function App() {
   const { isConnected, lastMessage } = useWebSocket(WS_URL);
