@@ -122,15 +122,17 @@ curl http://localhost:3001/api/health
 O Dockerfile foi otimizado para funcionar perfeitamente no Easypanel:
 
 1. **Crie um novo serviço** no Easypanel
-2. **Configure o repositório Git** ou faça upload do código
+2. **Configure o repositório Git** (https://github.com/stuartffh/CGG-2.0)
 3. **Defina as portas**:
    - Backend: 3001
    - Frontend: 5173
-4. **Variáveis de ambiente** (opcional):
-   ```
-   UPDATE_INTERVAL=3000
-   PORT=3001
-   ```
+4. **Configure variáveis de ambiente no painel do Easypanel** (opcional):
+   - `UPDATE_INTERVAL=3000` - Intervalo de atualização em ms (padrão: 3000)
+   - `PORT=3001` - Porta do backend (padrão: 3001)
+   - `NODE_ENV=production` - Ambiente de execução (já definido no Dockerfile)
+
+   **Importante**: No Easypanel, as variáveis de ambiente são configuradas diretamente no painel de configuração do serviço, não através de arquivo `.env`. O Easypanel injeta automaticamente essas variáveis no container em tempo de execução.
+
 5. **Deploy**
 
 O script `start.sh` garante que ambos os processos rodam corretamente e respondem aos sinais de shutdown do container.

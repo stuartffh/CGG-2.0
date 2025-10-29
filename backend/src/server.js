@@ -33,7 +33,6 @@ let lastProcessedData = null;
 
 // Gerenciamento de conexões WebSocket
 wss.on('connection', (ws) => {
-  console.log('✅ Novo cliente conectado. Total:', clients.size + 1);
   clients.add(ws);
 
   // Envia dados atuais imediatamente ao conectar (se disponível)
@@ -46,12 +45,11 @@ wss.on('connection', (ws) => {
   }
 
   ws.on('close', () => {
-    console.log('❌ Cliente desconectado. Total:', clients.size - 1);
     clients.delete(ws);
   });
 
   ws.on('error', (error) => {
-    console.error('❌ Erro no WebSocket:', error);
+    console.error('❌ WebSocket ERROR:', error.message);
     clients.delete(ws);
   });
 });
@@ -69,19 +67,12 @@ function broadcast(data) {
 // Função principal de atualização
 async function updateRTPData() {
   try {
-    console.log('🔄 Buscando dados da API CGG...');
-
     const data = await cggService.fetchAllRTP();
 
     if (data.games && data.games.length > 0) {
-      console.log(`✅ ${data.games.length} jogos recebidos da API CGG`);
-
-      // Processa jogos com conversão simples de basis points para porcentagem
       const processedGames = RTPCalculator.processGames(data.games);
 
-      console.log(`📊 ${processedGames.length} jogos processados e prontos para envio`);
-
-      // Salva histórico legado (opcional - mantém compatibilidade com tabela existente)
+      // Salva histórico (silenciosamente)
       for (const game of processedGames) {
         try {
           GameRTP.insert({
@@ -98,45 +89,23 @@ async function updateRTPData() {
         }
       }
 
-      // Cache assíncrono de imagens (não bloqueia envio)
+      // Cache assíncrono de imagens
       imageCacheService.cacheGameImages(processedGames, 3).catch(err => {
-        console.error('⚠️  Erro no cache de imagens:', err.message);
+        console.error('❌ Image cache ERROR:', err.message);
       });
 
-      // Armazena dados processados para novas conexões
       lastProcessedData = processedGames;
 
-      // Debug: mostra campos importantes do primeiro jogo
-      if (processedGames.length > 0) {
-        const game = processedGames[0];
-        console.log('📤 Dados do primeiro jogo:', {
-          game_id: game.game_id,
-          game_name: game.game_name,
-          provider: game.provider,
-          magnitude_bps_daily: game.magnitude_bps_daily,
-          sign_daily: game.sign_daily,
-          rtp_calculated_daily: game.rtp_calculated_daily,
-          magnitude_bps_weekly: game.magnitude_bps_weekly,
-          sign_weekly: game.sign_weekly,
-          rtp_calculated_weekly: game.rtp_calculated_weekly,
-          image_url: game.image_url
-        });
-      }
-
-      // Broadcast os dados processados para os clientes
+      // Broadcast os dados processados
       broadcast({
         type: 'update',
         data: processedGames,
         timestamp: data.timestamp
       });
-
-      console.log('✅ Dados enviados para clientes via WebSocket');
-    } else {
-      console.log('⚠️  Nenhum jogo extraído dos dados');
     }
 
   } catch (error) {
-    console.error('❌ Erro ao atualizar dados:', error.message);
+    console.error('❌ UPDATE ERROR:', error.message);
 
     broadcast({
       type: 'error',
@@ -150,19 +119,13 @@ async function updateRTPData() {
 let updateInterval;
 
 function startUpdates() {
-  console.log(`🚀 Iniciando atualizações a cada ${UPDATE_INTERVAL}ms`);
-
-  // Primeira atualização imediata
   updateRTPData();
-
-  // Atualizações periódicas
   updateInterval = setInterval(updateRTPData, UPDATE_INTERVAL);
 }
 
 function stopUpdates() {
   if (updateInterval) {
     clearInterval(updateInterval);
-    console.log('⏸️  Atualizações pausadas');
   }
 }
 
@@ -295,10 +258,15 @@ server.listen(PORT, () => {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n🛑 Encerrando servidor...');
   stopUpdates();
   server.close(() => {
-    console.log('✅ Servidor encerrado');
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  stopUpdates();
+  server.close(() => {
     process.exit(0);
   });
 });
