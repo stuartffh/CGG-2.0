@@ -33,9 +33,9 @@ COPY --from=backend-deps /app/backend/node_modules ./backend/node_modules
 COPY backend/package*.json ./backend/
 COPY backend/src ./backend/src
 
-# Copia build do frontend
+# Copia build e dependências do frontend (incluindo Vite para preview)
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
-COPY --from=frontend-deps /app/frontend/node_modules ./frontend/node_modules
+COPY --from=frontend-build /app/frontend/node_modules ./frontend/node_modules
 COPY frontend/package*.json ./frontend/
 COPY frontend/vite.config.js ./frontend/
 COPY frontend/index.html ./frontend/
