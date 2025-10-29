@@ -2,7 +2,7 @@
 set -e
 
 echo "=================================================="
-echo "  CGG RTP Monitor - Starting Services"
+echo "  CGG RTP Monitor - Starting Services (Vite Fix)"
 echo "  Environment: ${NODE_ENV:-production}"
 echo "=================================================="
 
@@ -54,29 +54,40 @@ fi
 # Inicia o frontend em background
 echo ""
 echo "Starting frontend on port 5173..."
-
-# Verifica se o Vite está disponível
 cd /app/frontend
-if ! command -v vite &> /dev/null; then
-    echo "Vite not found in PATH, trying npx..."
-    if ! npx vite --version &> /dev/null; then
-        echo "ERROR: Vite is not available!"
-        echo "Installing Vite..."
-        npm install vite@latest
-    fi
+
+# Instala Vite se não estiver disponível
+echo "Checking Vite availability..."
+if ! npx vite --version &> /dev/null; then
+    echo "Installing Vite..."
+    npm install vite@latest
 fi
 
-# Inicia o frontend
-npx vite preview --host ${HOST:-0.0.0.0} --port 5173 --strictPort false > /app/logs/frontend.log 2>&1 &
+# Verifica se o build existe
+if [ ! -d "dist" ]; then
+    echo "ERROR: Frontend build not found!"
+    echo "Please ensure the frontend is built before running the container."
+    exit 1
+fi
+
+# Inicia o Vite preview
+echo "Starting Vite preview server..."
+npx vite preview \
+  --host ${HOST:-0.0.0.0} \
+  --port 5173 \
+  --strictPort false \
+  --cors \
+  > /app/logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 
 # Aguarda o frontend inicializar
-sleep 3
+sleep 5
 
 # Verifica se o frontend está rodando
 if ! kill -0 $FRONTEND_PID 2>/dev/null; then
     echo "ERROR: Frontend failed to start!"
+    echo "Frontend logs:"
     cat /app/logs/frontend.log
     exit 1
 fi

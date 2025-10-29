@@ -96,10 +96,23 @@ Blocked request. This host ("rtp-games.zapchatbr.com") is not allowed.
 - ✅ **Fallback**: `'all'` para aceitar qualquer host
 - ✅ **CORS**: Headers configurados para produção
 
+#### 6. ❌ Vite Not Found Error (CRÍTICO)
+```
+Cannot find package 'vite' imported from /app/frontend/node_modules/.vite-temp/vite.config.js
+```
+
+**Solução:**
+- ✅ **Configurado**: Vite movido para `dependencies` no `package.json`
+- ✅ **Script corrigido**: `start-vite-fix.sh` com verificação automática
+- ✅ **Instalação automática**: Vite é instalado se não estiver disponível
+- ✅ **Verificação de build**: Confirma que `dist/` existe antes de iniciar
+
 **Se ainda ocorrer:**
 ```bash
-# Usar script alternativo
-./start-alternative.sh
+# Entrar no container e executar manualmente:
+cd /app/frontend
+npm install vite@latest
+npx vite preview --host 0.0.0.0 --port 5173
 ```
 
 ### Logs Úteis:
