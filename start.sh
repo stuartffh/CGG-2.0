@@ -3,6 +3,7 @@ set -e
 
 echo "=================================================="
 echo "  CGG RTP Monitor - Starting Services"
+echo "  Environment: ${NODE_ENV:-production}"
 echo "=================================================="
 
 # Função para handle de sinais (graceful shutdown)
@@ -28,6 +29,9 @@ cleanup() {
 # Configura trap para sinais
 trap cleanup SIGTERM SIGINT SIGQUIT
 
+# Cria diretórios se não existirem
+mkdir -p /app/logs /app/backend/data
+
 # Inicia o backend em background
 echo ""
 echo "Starting backend on port ${PORT:-3001}..."
@@ -36,30 +40,46 @@ node src/server.js > /app/logs/backend.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend started (PID: $BACKEND_PID)"
 
-# Aguarda um pouco para o backend inicializar
-sleep 2
+# Aguarda o backend inicializar
+echo "Waiting for backend to initialize..."
+sleep 5
+
+# Verifica se o backend está rodando
+if ! kill -0 $BACKEND_PID 2>/dev/null; then
+    echo "ERROR: Backend failed to start!"
+    cat /app/logs/backend.log
+    exit 1
+fi
 
 # Inicia o frontend em background
 echo ""
 echo "Starting frontend on port 5173..."
 cd /app/frontend
-node_modules/.bin/vite preview --host 0.0.0.0 --port 5173 > /app/logs/frontend.log 2>&1 &
+npx vite preview --host ${HOST:-0.0.0.0} --port 5173 > /app/logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 
+# Aguarda o frontend inicializar
+sleep 3
+
+# Verifica se o frontend está rodando
+if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+    echo "ERROR: Frontend failed to start!"
+    cat /app/logs/frontend.log
+    exit 1
+fi
+
 echo ""
 echo "=================================================="
-echo "  Services Running:"
-echo "  - Backend:  http://localhost:${PORT:-3001}"
-echo "  - Frontend: http://localhost:5173"
-echo "  - WebSocket: ws://localhost:${PORT:-3001}"
+echo "  Services Running Successfully:"
+echo "  - Backend:  http://${HOST:-0.0.0.0}:${PORT:-3001}"
+echo "  - Frontend: http://${HOST:-0.0.0.0}:5173"
+echo "  - WebSocket: ws://${HOST:-0.0.0.0}:${PORT:-3001}"
 echo "=================================================="
 echo ""
 echo "Logs available at:"
 echo "  - /app/logs/backend.log"
 echo "  - /app/logs/frontend.log"
-echo ""
-echo "Press Ctrl+C to stop"
 echo ""
 
 # Monitora os processos e mostra logs

@@ -241,13 +241,14 @@ app.post('/api/cleanup', (req, res) => {
 });
 
 // Iniciar servidor
-server.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+server.listen(PORT, HOST, () => {
   console.log(`
 ╔════════════════════════════════════════════════╗
 ║   🎰 CGG RTP Monitor - Backend Server          ║
 ╠════════════════════════════════════════════════╣
-║   🌐 HTTP Server: http://localhost:${PORT}     ║
-║   🔌 WebSocket: ws://localhost:${PORT}         ║
+║   🌐 HTTP Server: http://${HOST}:${PORT}        ║
+║   🔌 WebSocket: ws://${HOST}:${PORT}         ║
 ║   ⏱️  Update Interval: ${UPDATE_INTERVAL}ms              ║
 ╚════════════════════════════════════════════════╝
   `);
