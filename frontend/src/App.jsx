@@ -17,25 +17,66 @@ function App() {
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState('all'); // 'all', 'with-rtp', 'without-rtp'
   const [rtpFilter, setRtpFilter] = useState('all'); // 'all', 'positive', 'negative', 'neutral'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
   const [lastUpdate, setLastUpdate] = useState(null);
   const [debugMode, setDebugMode] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updatingCards, setUpdatingCards] = useState(new Set());
+  const [copiedCard, setCopiedCard] = useState(null);
   const prevGamesRef = useRef({});
+
+  // Função para copiar nome do jogo
+  const copyGameName = async (gameName) => {
+    try {
+      await navigator.clipboard.writeText(gameName);
+      console.log(`✅ Nome copiado: ${gameName}`);
+      
+      // Feedback visual
+      setCopiedCard(gameName);
+      setTimeout(() => {
+        setCopiedCard(null);
+      }, 1000);
+    } catch (err) {
+      console.error('❌ Erro ao copiar:', err);
+      // Fallback para navegadores mais antigos
+      const textArea = document.createElement('textarea');
+      textArea.value = gameName;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      setCopiedCard(gameName);
+      setTimeout(() => {
+        setCopiedCard(null);
+      }, 1000);
+    }
+  };
 
   useEffect(() => {
     if (lastMessage) {
       console.log('📨 Mensagem recebida:', lastMessage.type);
 
       if (lastMessage.type === 'initial' || lastMessage.type === 'update') {
-        // Indica que está atualizando para aplicar classe CSS
-        if (lastMessage.type === 'update') {
-          setIsUpdating(true);
-        }
-
         setLastUpdate(lastMessage.timestamp);
 
         // Se temos dados parseados
         if (lastMessage.data && Array.isArray(lastMessage.data)) {
+          // Identifica cards que mudaram para aplicar transição suave
+          const changedCards = new Set();
+          
+          // Compara dados anteriores com novos
+          lastMessage.data.forEach(newGame => {
+            const oldGame = games.find(g => g.game_id === newGame.game_id);
+            if (oldGame) {
+              // Verifica se RTP mudou
+              if (oldGame.rtp_calculated_daily !== newGame.rtp_calculated_daily ||
+                  oldGame.rtp_calculated_weekly !== newGame.rtp_calculated_weekly) {
+                changedCards.add(newGame.game_id);
+              }
+            }
+          });
+
           // Salva RTPs anteriores para comparação
           games.forEach(game => {
             prevGamesRef.current[game.game_id] = game.rtp_calculated_daily;
@@ -51,17 +92,23 @@ function App() {
 
           console.log(`📊 Jogos com RTP: ${withRTP.length}, sem RTP: ${withoutRTP.length}`);
 
-          // Atualiza os dados com transição suave
+          // Aplica transição suave apenas aos cards que mudaram
+          if (lastMessage.type === 'update' && changedCards.size > 0) {
+            setUpdatingCards(changedCards);
+            setIsUpdating(true);
+            
+            // Remove transição após animação
+            setTimeout(() => {
+              setUpdatingCards(new Set());
+              setIsUpdating(false);
+            }, 800);
+          }
+
+          // Atualiza os dados
           setGames(lastMessage.data);
           setGamesWithRTP(withRTP);
           setGamesWithoutRTP(withoutRTP);
 
-          // Remove o estado de atualização após um pequeno delay
-          if (lastMessage.type === 'update') {
-            setTimeout(() => {
-              setIsUpdating(false);
-            }, 300);
-          }
         } else if (lastMessage.data) {
           // Modo debug: mostra dados brutos do protobuf
           console.log('📦 Dados recebidos (debug):', lastMessage.data);
@@ -109,26 +156,33 @@ function App() {
       });
     }
 
-    // Ordenação
+    // Ordenação com controle de ordem
     filtered.sort((a, b) => {
+      let comparison = 0;
+      
       switch (sortBy) {
         case 'name':
-          return a.game_name.localeCompare(b.game_name);
-        case 'rtp-daily-high':
-          return (b.rtp_calculated_daily || 0) - (a.rtp_calculated_daily || 0);
-        case 'rtp-daily-low':
-          return (a.rtp_calculated_daily || 0) - (b.rtp_calculated_daily || 0);
-        case 'rtp-weekly-high':
-          return (b.rtp_calculated_weekly || 0) - (a.rtp_calculated_weekly || 0);
-        case 'rtp-weekly-low':
-          return (a.rtp_calculated_weekly || 0) - (b.rtp_calculated_weekly || 0);
+          comparison = a.game_name.localeCompare(b.game_name);
+          break;
+        case 'rtp-daily':
+          comparison = (a.rtp_calculated_daily || 0) - (b.rtp_calculated_daily || 0);
+          break;
+        case 'rtp-weekly':
+          comparison = (a.rtp_calculated_weekly || 0) - (b.rtp_calculated_weekly || 0);
+          break;
+        case 'provider':
+          comparison = (a.provider || '').localeCompare(b.provider || '');
+          break;
         default:
-          return 0;
+          comparison = 0;
       }
+      
+      // Aplica ordem crescente ou decrescente
+      return sortOrder === 'desc' ? -comparison : comparison;
     });
 
     setFilteredGames(filtered);
-  }, [games, gamesWithRTP, gamesWithoutRTP, searchTerm, sortBy, viewMode, rtpFilter]);
+  }, [games, gamesWithRTP, gamesWithoutRTP, searchTerm, sortBy, sortOrder, viewMode, rtpFilter]);
 
   return (
     <div className="app">
@@ -157,8 +211,16 @@ function App() {
               <Filter size={16} />
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                 <option value="name">Nome</option>
-                <option value="rtp-daily-high">RTP Diário</option>
-                <option value="rtp-weekly-high">RTP Semanal</option>
+                <option value="rtp-daily">RTP Diário</option>
+                <option value="rtp-weekly">RTP Semanal</option>
+                <option value="provider">Provedor</option>
+              </select>
+            </div>
+
+            <div className="sort-order-box">
+              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                <option value="asc">Crescente</option>
+                <option value="desc">Decrescente</option>
               </select>
             </div>
 
@@ -250,6 +312,9 @@ function App() {
               key={game.game_id}
               game={game}
               prevRTP={prevGamesRef.current[game.game_id]}
+              isUpdating={updatingCards.has(game.game_id)}
+              isCopied={copiedCard === game.game_name}
+              onCopy={() => copyGameName(game.game_name)}
             />
           ))
         ) : (

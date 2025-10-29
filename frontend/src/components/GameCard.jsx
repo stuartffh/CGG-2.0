@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-export function GameCard({ game, prevRTP }) {
+export function GameCard({ game, prevRTP, isUpdating = false, isCopied = false, onCopy }) {
   const hasRTP = game.daily || game.weekly || game.rtp_calculated_daily != null || game.rtp_calculated_weekly != null;
 
   const rtpChange = prevRTP ? (game.rtp_calculated_daily || 0) - prevRTP : 0;
@@ -35,7 +35,10 @@ export function GameCard({ game, prevRTP }) {
   };
 
   return (
-    <div className={`game-card ${!hasRTP ? 'no-rtp' : ''}`}>
+    <div 
+      className={`game-card ${!hasRTP ? 'no-rtp' : ''} ${isUpdating ? 'updating' : ''} ${isCopied ? 'copied' : ''}`}
+      onClick={() => onCopy && onCopy()}
+    >
       <div className="game-image-container">
         <img
           src={game.image_url}
@@ -59,7 +62,7 @@ export function GameCard({ game, prevRTP }) {
             <div className="rtp-item">
               <span className="rtp-label">RTP Diário</span>
               <div className="rtp-value-container">
-                <span className={`rtp-value ${getRtpClass(game.rtp_calculated_daily, game.sign_daily)}`}>
+                <span className={`rtp-value ${getRtpClass(game.rtp_calculated_daily, game.sign_daily)} ${isUpdating ? 'updating' : ''}`}>
                   {formatRTPValue(game.rtp_calculated_daily)}
                 </span>
                 {rtpChange !== 0 && (
@@ -73,7 +76,7 @@ export function GameCard({ game, prevRTP }) {
 
             <div className="rtp-item">
               <span className="rtp-label">RTP Semanal</span>
-              <span className={`rtp-value ${getRtpClass(game.rtp_calculated_weekly, game.sign_weekly)}`}>
+              <span className={`rtp-value ${getRtpClass(game.rtp_calculated_weekly, game.sign_weekly)} ${isUpdating ? 'updating' : ''}`}>
                 {formatRTPValue(game.rtp_calculated_weekly)}
               </span>
             </div>
