@@ -95,13 +95,14 @@ function App() {
           // Aplica transição suave apenas aos cards que mudaram
           if (lastMessage.type === 'update' && changedCards.size > 0) {
             setUpdatingCards(changedCards);
-            setIsUpdating(true);
+            // Não aplica isUpdating global para não interferir com filtros
+            // setIsUpdating(true);
             
             // Remove transição após animação
             setTimeout(() => {
               setUpdatingCards(new Set());
-              setIsUpdating(false);
-            }, 800);
+              // setIsUpdating(false);
+            }, 600); // Reduzido de 800ms para 600ms
           }
 
           // Atualiza os dados
@@ -305,7 +306,7 @@ function App() {
       </div>
 
 
-      <main className={`games-grid ${isUpdating ? 'updating' : ''}`}>
+      <main className="games-grid">
         {filteredGames.length > 0 ? (
           filteredGames.map((game) => (
             <GameCard

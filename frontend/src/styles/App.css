@@ -370,7 +370,7 @@ body::before {
   border-image: var(--gradient-neon) 1;
   border-radius: 15px;
   padding: 0.5rem 0.8rem;
-  transition: var(--transition-glow);
+  transition: var(--transition-fast); /* Mudança: transição mais rápida */
   backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
@@ -378,7 +378,7 @@ body::before {
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   min-width: 120px;
-  z-index: 10; /* Garante que estejam acima de outros elementos */
+  z-index: 10;
   cursor: pointer;
 }
 
@@ -405,12 +405,12 @@ body::before {
 .filter-box:hover,
 .rtp-filter-box:hover,
 .sort-order-box:hover {
-  transform: perspective(1000px) rotateX(0deg) translateY(-5px) scale(1.02);
+  transform: perspective(1000px) rotateX(0deg) translateY(-2px) scale(1.01); /* Reduzido movimento */
   box-shadow: 
-    0 15px 45px rgba(0, 0, 0, 0.4),
+    0 8px 25px rgba(0, 0, 0, 0.3), /* Reduzido blur */
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 0 2px rgba(0, 255, 136, 0.4),
-    0 0 30px var(--accent-glow);
+    0 0 0 1px rgba(0, 255, 136, 0.3), /* Reduzido border */
+    0 0 15px var(--accent-glow); /* Reduzido glow */
   border-color: var(--accent);
 }
 
@@ -418,33 +418,33 @@ body::before {
 .filter-box:focus-within,
 .rtp-filter-box:focus-within,
 .sort-order-box:focus-within {
-  transform: perspective(1000px) rotateX(0deg) translateY(-8px) scale(1.05);
+  transform: perspective(1000px) rotateX(0deg) translateY(-3px) scale(1.02); /* Reduzido movimento */
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 12px 35px rgba(0, 0, 0, 0.4), /* Reduzido blur */
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 0 0 3px rgba(0, 255, 136, 0.6),
-    0 0 50px var(--accent-glow),
-    0 0 80px var(--accent-glow);
+    0 0 0 2px rgba(0, 255, 136, 0.5), /* Reduzido border */
+    0 0 25px var(--accent-glow), /* Reduzido glow */
+    0 0 40px var(--accent-glow);
   border-color: var(--accent);
-  animation: filter-glow 2s ease-in-out infinite alternate;
+  animation: filter-glow 1.5s ease-in-out infinite alternate; /* Reduzido tempo */
 }
 
 @keyframes filter-glow {
   0% { 
     box-shadow: 
-      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 12px 35px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 0 0 3px rgba(0, 255, 136, 0.6),
-      0 0 50px var(--accent-glow),
-      0 0 80px var(--accent-glow);
+      0 0 0 2px rgba(0, 255, 136, 0.5),
+      0 0 25px var(--accent-glow),
+      0 0 40px var(--accent-glow);
   }
   100% { 
     box-shadow: 
-      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 12px 35px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 0 0 3px rgba(0, 255, 136, 0.8),
-      0 0 70px var(--accent-glow),
-      0 0 100px var(--accent-glow);
+      0 0 0 2px rgba(0, 255, 136, 0.7),
+      0 0 35px var(--accent-glow),
+      0 0 50px var(--accent-glow);
   }
 }
 
@@ -811,7 +811,8 @@ body::before {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
   animation: card-scan 4s linear infinite;
-  z-index: 1;
+  z-index: -1; /* CORRIGIDO: z-index negativo para não cobrir o conteúdo */
+  pointer-events: none; /* Garante que não interfira nos cliques */
 }
 
 @keyframes card-scan {
@@ -889,7 +890,8 @@ body::before {
     rgba(0, 136, 255, 0.1) 100%);
   opacity: 0;
   transition: var(--transition-glow);
-  z-index: 2;
+  z-index: -1; /* CORRIGIDO: z-index negativo para não cobrir a imagem */
+  pointer-events: none; /* Garante que não interfira nos cliques */
 }
 
 .game-image-container:hover::before {
@@ -1224,39 +1226,77 @@ body::before {
   }
 }
 
-/* Smooth transitions to prevent flickering */
+/* Transições ultra-suaves para o grid */
 .games-grid {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 1s ease, transform 1s ease;
 }
 
 .games-grid.updating {
+  opacity: 0.95;
+  transform: scale(0.99);
+}
+
+/* Transições ultra-suaves para cards individuais */
+.game-card {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.game-card.updating {
   opacity: 0.9;
   transform: scale(0.98);
 }
 
-/* Transições suaves para cards individuais */
-.game-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.game-card.updating {
-  opacity: 0.7;
-  transform: scale(0.95);
-}
-
-/* Transições suaves para valores RTP */
+/* Transições ultra-suaves para valores RTP */
 .rtp-value {
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .rtp-value.updating {
-  transform: scale(1.1);
-  filter: brightness(1.2);
+  transform: scale(1.05);
+  filter: brightness(1.1);
 }
 
-/* Feedback visual para cópia */
-.game-card.copied {
-  animation: copy-success 0.8s ease-out;
+/* Alerta sutil para RTP extremamente negativo - TRANSIÇÕES SUAVES */
+.game-card.extreme-negative {
+  border: 2px solid #ff6666 !important;
+  border-image: none !important;
+  animation: subtle-border-pulse 6s ease-in-out infinite;
+}
+
+@keyframes subtle-border-pulse {
+  0%, 100% {
+    border-color: #ff6666;
+    box-shadow:
+      0 0 8px rgba(255, 102, 102, 0.2),
+      0 0 15px rgba(255, 102, 102, 0.1);
+  }
+  50% {
+    border-color: #ff8888;
+    box-shadow:
+      0 0 12px rgba(255, 102, 102, 0.3),
+      0 0 20px rgba(255, 102, 102, 0.2);
+  }
+}
+
+/* Efeito muito sutil de RTP piscante para valores extremamente negativos */
+.game-card.extreme-negative .rtp-value.negative {
+  color: #ff6666 !important;
+  animation: very-subtle-rtp-blink 4s ease-in-out infinite;
+}
+
+@keyframes very-subtle-rtp-blink {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 
+      0 0 3px rgba(255, 102, 102, 0.4),
+      0 0 6px rgba(255, 102, 102, 0.2);
+  }
+  50% {
+    opacity: 0.9;
+    text-shadow: 
+      0 0 5px rgba(255, 102, 102, 0.6),
+      0 0 10px rgba(255, 102, 102, 0.4);
+  }
 }
 
 @keyframes copy-success {
@@ -1303,17 +1343,17 @@ body::before {
   opacity: 1;
 }
 
-/* Apply cyberpunk animations to elements */
+/* Apply cyberpunk animations to elements - ULTRA SUAVES */
 .game-card {
-  animation: cyberpunk-fadeIn 1s ease-out;
-  transition: all 0.3s ease;
+  animation: cyberpunk-fadeIn 2s ease-out;
+  transition: all 0.8s ease;
 }
 
 @keyframes cyberpunk-fadeIn {
   0% { 
     opacity: 0; 
-    transform: translateY(50px) rotateX(90deg);
-    filter: blur(10px);
+    transform: translateY(20px) rotateX(10deg);
+    filter: blur(2px);
   }
   100% { 
     opacity: 1; 

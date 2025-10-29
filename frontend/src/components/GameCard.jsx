@@ -7,6 +7,10 @@ export function GameCard({ game, prevRTP, isUpdating = false, isCopied = false, 
   const rtpChange = prevRTP ? (game.rtp_calculated_daily || 0) - prevRTP : 0;
   const changePercent = prevRTP ? ((rtpChange / prevRTP) * 100).toFixed(2) : 0;
 
+  // Verifica se RTP está muito negativo (< -150%)
+  const isExtremelyNegative = (game.rtp_calculated_daily != null && game.rtp_calculated_daily < -150) ||
+                             (game.rtp_calculated_weekly != null && game.rtp_calculated_weekly < -150);
+
   const getTrendIcon = () => {
     if (rtpChange > 0) return <TrendingUp className="trend-up" size={20} />;
     if (rtpChange < 0) return <TrendingDown className="trend-down" size={20} />;
@@ -36,7 +40,7 @@ export function GameCard({ game, prevRTP, isUpdating = false, isCopied = false, 
 
   return (
     <div 
-      className={`game-card ${!hasRTP ? 'no-rtp' : ''} ${isUpdating ? 'updating' : ''} ${isCopied ? 'copied' : ''}`}
+      className={`game-card ${!hasRTP ? 'no-rtp' : ''} ${isUpdating ? 'updating' : ''} ${isCopied ? 'copied' : ''} ${isExtremelyNegative ? 'extreme-negative' : ''}`}
       onClick={() => onCopy && onCopy()}
     >
       <div className="game-image-container">
