@@ -71,6 +71,7 @@ function App() {
 
         if (result.success && result.data && result.data.length > 0) {
           console.log(`✅ ${result.data.length} jogos carregados do banco de dados`);
+          console.log('🔍 Primeiro jogo (amostra):', result.data[0]);
 
           // Converte formato do banco para formato do frontend
           const gamesData = result.data.map(game => ({
@@ -147,11 +148,17 @@ function App() {
 
         // Se temos dados parseados
         if (lastMessage.data && Array.isArray(lastMessage.data)) {
+          // Adiciona timestamp aos dados do WebSocket
+          const gamesWithTimestamp = lastMessage.data.map(game => ({
+            ...game,
+            timestamp: lastMessage.timestamp || Date.now()
+          }));
+
           // Identifica cards que mudaram para aplicar transição suave
           const changedCards = new Set();
-          
+
           // Compara dados anteriores com novos
-          lastMessage.data.forEach(newGame => {
+          gamesWithTimestamp.forEach(newGame => {
             const oldGame = games.find(g => g.game_id === newGame.game_id);
             if (oldGame) {
               // Verifica se RTP mudou
@@ -168,10 +175,10 @@ function App() {
           });
 
           // Separa jogos com RTP e sem RTP
-          const withRTP = lastMessage.data.filter(game =>
+          const withRTP = gamesWithTimestamp.filter(game =>
             game.daily || game.weekly || game.rtp_calculated_daily != null || game.rtp_calculated_weekly != null
           );
-          const withoutRTP = lastMessage.data.filter(game =>
+          const withoutRTP = gamesWithTimestamp.filter(game =>
             !game.daily && !game.weekly && game.rtp_calculated_daily == null && game.rtp_calculated_weekly == null
           );
 
@@ -182,7 +189,7 @@ function App() {
             setUpdatingCards(changedCards);
             // Não aplica isUpdating global para não interferir com filtros
             // setIsUpdating(true);
-            
+
             // Remove transição após animação
             setTimeout(() => {
               setUpdatingCards(new Set());
@@ -191,7 +198,7 @@ function App() {
           }
 
           // Atualiza os dados
-          setGames(lastMessage.data);
+          setGames(gamesWithTimestamp);
           setGamesWithRTP(withRTP);
           setGamesWithoutRTP(withoutRTP);
 
