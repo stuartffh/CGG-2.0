@@ -36,7 +36,6 @@ class CGGService {
     const setCookie = response.headers.get('set-cookie');
     if (setCookie) {
       this.cookies = setCookie;
-      console.log('🍪 Cookies atualizados');
     }
   }
 
@@ -122,10 +121,9 @@ class CGGService {
   // Parse básico do protobuf
   parseProtobuf(buffer, type) {
     try {
-      console.log(`📦 Buffer recebido (${type}):`, buffer.length, 'bytes');
-
       // Log apenas em modo debug
       if (process.env.DEBUG_PROTOBUF === 'true') {
+        console.log(`📦 Buffer recebido (${type}):`, buffer.length, 'bytes');
         const str = buffer.toString('utf8', 0, Math.min(buffer.length, 1000));
         console.log('🔍 Primeiros bytes:', buffer.slice(0, 50));
         console.log('📝 String preview:', str.substring(0, 200));
@@ -134,8 +132,6 @@ class CGGService {
 
       // Extrai os jogos do buffer
       const games = this.extractGames(buffer, type);
-
-      console.log(`✅ Extraídos ${games.length} jogos (${type})`);
 
       return games;
     } catch (error) {
@@ -494,8 +490,6 @@ class CGGService {
         this.fetchWeeklyRTP()
       ]);
 
-      console.log(`🎮 Daily: ${dailyGames.length} jogos, Weekly: ${weeklyGames.length} jogos`);
-
       // Combina os dados em um mapa por game_id
       const gamesMap = new Map();
 
@@ -562,8 +556,6 @@ class CGGService {
 
       // Converte o mapa em array
       const combinedGames = Array.from(gamesMap.values());
-
-      console.log(`✨ Total combinado: ${combinedGames.length} jogos únicos`);
 
       return {
         games: combinedGames,
