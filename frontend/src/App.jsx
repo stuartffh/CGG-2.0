@@ -50,7 +50,65 @@ function App() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updatingCards, setUpdatingCards] = useState(new Set());
   const [copiedCard, setCopiedCard] = useState(null);
+  const [isLoadingFromDB, setIsLoadingFromDB] = useState(true);
   const prevGamesRef = useRef({});
+
+  // Busca dados iniciais do banco de dados
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        console.log('📥 Buscando dados do banco de dados...');
+
+        // Constrói a URL da API baseada na URL do WebSocket
+        const apiUrl = WS_URL.replace('ws://', 'http://').replace('wss://', 'https://');
+        const response = await fetch(`${apiUrl}/api/games/latest`);
+
+        if (!response.ok) {
+          throw new Error('Falha ao buscar dados do banco');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+          console.log(`✅ ${result.data.length} jogos carregados do banco de dados`);
+
+          // Converte formato do banco para formato do frontend
+          const gamesData = result.data.map(game => ({
+            game_id: game.game_id,
+            game_name: game.game_name,
+            provider: game.provider,
+            rtp_calculated_daily: game.rtp_daily,
+            rtp_calculated_weekly: game.rtp_weekly,
+            image_url: game.image_url,
+            timestamp: game.timestamp,
+            // Calcula sign baseado no RTP
+            sign_daily: game.rtp_daily > 96 ? 1 : game.rtp_daily < 96 ? -1 : 0,
+            sign_weekly: game.rtp_weekly > 96 ? 1 : game.rtp_weekly < 96 ? -1 : 0,
+          }));
+
+          const withRTP = gamesData.filter(game =>
+            game.rtp_calculated_daily != null || game.rtp_calculated_weekly != null
+          );
+          const withoutRTP = gamesData.filter(game =>
+            game.rtp_calculated_daily == null && game.rtp_calculated_weekly == null
+          );
+
+          setGames(gamesData);
+          setGamesWithRTP(withRTP);
+          setGamesWithoutRTP(withoutRTP);
+          setLastUpdate(result.data[0]?.timestamp || Date.now());
+        } else {
+          console.log('ℹ️ Nenhum dado encontrado no banco');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar dados do banco:', error);
+      } finally {
+        setIsLoadingFromDB(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   // Função para copiar nome do jogo
   const copyGameName = async (gameName) => {

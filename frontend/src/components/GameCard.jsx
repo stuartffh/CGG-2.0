@@ -91,7 +91,24 @@ export function GameCard({ game, prevRTP, isUpdating = false, isCopied = false, 
           </div>
         )}
 
-        <div className="game-id">ID: {game.game_id}</div>
+        <div className="game-timestamp">
+          {game.timestamp ? (
+            <>
+              <span className="timestamp-label">Última captura:</span>
+              <span className="timestamp-value">
+                {new Date(game.timestamp).toLocaleString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </>
+          ) : (
+            <span className="timestamp-value">Aguardando dados...</span>
+          )}
+        </div>
       </div>
     </div>
   );
