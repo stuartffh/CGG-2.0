@@ -67,7 +67,7 @@ if ! command -v vite &> /dev/null; then
 fi
 
 # Inicia o frontend
-npx vite preview --host ${HOST:-0.0.0.0} --port 5173 --strictPort false > /app/logs/frontend.log 2>&1 &
+npx vite preview --host 0.0.0.0 --port 5173 > /app/logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 
