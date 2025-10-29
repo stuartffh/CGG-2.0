@@ -61,7 +61,7 @@ echo "Waiting for backend to initialize..."
 sleep 5
 
 # Verifica se o backend está rodando
-if ! kill -0 $BACKEND_PID 2>/dev/null; then
+if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
     echo "ERROR: Backend failed to start!"
     cat /app/logs/backend.log
     exit 1
@@ -124,7 +124,7 @@ echo "Frontend started (PID: $FRONTEND_PID)"
 sleep 5
 
 # Verifica se o frontend está rodando
-if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+if ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
     echo "ERROR: Frontend failed to start!"
     echo "Frontend logs:"
     cat /app/logs/frontend.log
@@ -149,9 +149,9 @@ tail -f /app/logs/backend.log /app/logs/frontend.log &
 TAIL_PID=$!
 
 # Aguarda os processos principais
-wait $BACKEND_PID $FRONTEND_PID
+wait "$BACKEND_PID" "$FRONTEND_PID"
 
 # Limpa tail se os processos principais terminarem
-kill $TAIL_PID 2>/dev/null || true
+kill "$TAIL_PID" 2>/dev/null || true
 
 echo "All services stopped"
