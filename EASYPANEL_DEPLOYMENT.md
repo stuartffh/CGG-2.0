@@ -85,6 +85,23 @@ curl http://localhost:3001/api/health
 ls -la /app/frontend/dist/
 ```
 
+#### 5. ❌ Host Blocked Error (CRÍTICO)
+```
+Blocked request. This host ("rtp-games.zapchatbr.com") is not allowed.
+```
+
+**Solução:**
+- ✅ **Configurado**: `vite.config.js` com `allowedHosts`
+- ✅ **Domínios permitidos**: `rtp-games.zapchatbr.com`, `.zapchatbr.com`
+- ✅ **Fallback**: `'all'` para aceitar qualquer host
+- ✅ **CORS**: Headers configurados para produção
+
+**Se ainda ocorrer:**
+```bash
+# Usar script alternativo
+./start-alternative.sh
+```
+
 ### Logs Úteis:
 ```bash
 # Backend logs

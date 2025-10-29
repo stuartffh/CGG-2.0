@@ -59,6 +59,7 @@ COPY backend/src ./backend/src
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 COPY frontend/package*.json ./frontend/
 COPY frontend/vite.config.js ./frontend/
+COPY frontend/vite.production.config.js ./frontend/
 COPY frontend/index.html ./frontend/
 
 # Instala apenas vite para preview (produção)

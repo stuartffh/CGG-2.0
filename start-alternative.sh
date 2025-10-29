@@ -2,7 +2,7 @@
 set -e
 
 echo "=================================================="
-echo "  CGG RTP Monitor - Starting Services"
+echo "  CGG RTP Monitor - Starting Services (Alternative)"
 echo "  Environment: ${NODE_ENV:-production}"
 echo "=================================================="
 
@@ -51,11 +51,23 @@ if ! kill -0 $BACKEND_PID 2>/dev/null; then
     exit 1
 fi
 
-# Inicia o frontend em background
+# Inicia o frontend em background com configurações específicas para EasyPanel
 echo ""
 echo "Starting frontend on port 5173..."
 cd /app/frontend
-npx vite preview --host ${HOST:-0.0.0.0} --port 5173 --strictPort false > /app/logs/frontend.log 2>&1 &
+
+# Configura variáveis específicas para o Vite
+export VITE_HOST=${HOST:-0.0.0.0}
+export VITE_PORT=5173
+export VITE_ALLOWED_HOSTS="rtp-games.zapchatbr.com,.zapchatbr.com,.easypanel.host,.easypanel.app,all"
+
+# Inicia o Vite preview com configurações específicas
+npx vite preview \
+  --host ${HOST:-0.0.0.0} \
+  --port 5173 \
+  --strictPort false \
+  --cors \
+  > /app/logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 
