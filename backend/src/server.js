@@ -74,186 +74,63 @@ async function updateRTPData() {
     const data = await cggService.fetchAllRTP();
 
     if (data.games && data.games.length > 0) {
-      console.log(`✅ ${data.games.length} jogos processados com sucesso!`);
+      console.log(`✅ ${data.games.length} jogos recebidos da API CGG`);
 
-      // Processa jogos com cálculos estatísticos Bayesianos
-      const processedGames = [];
+      // Processa jogos com conversão simples de basis points para porcentagem
+      const processedGames = RTPCalculator.processGames(data.games);
 
-      for (const game of data.games) {
+      console.log(`📊 ${processedGames.length} jogos processados e prontos para envio`);
+
+      // Salva histórico legado (opcional - mantém compatibilidade com tabela existente)
+      for (const game of processedGames) {
         try {
-          // Upsert metadados do jogo
-          Game.upsertGame({
-            id: game.game_id,
-            title: game.game_name,
-            provider: game.provider,
-            image_path: game.image_path,
-            rtp_teorico: 0.96, // Base padrão
-            volatility: 'medium', // Padrão, pode ser enriquecido futuramente
-            has_feature_buy: 0,
-            has_progressive: 0
-          });
-
-          // Processa cálculos estatísticos
-          const processed = RTPCalculator.processGame({
+          GameRTP.insert({
             game_id: game.game_id,
             game_name: game.game_name,
             provider: game.provider,
-            rtp_teorico: 0.96,
-            volatility: 'medium',
-            has_progressive: false,
-            magnitude_bps_daily: game.magnitude_bps_daily, // Field 5 = magnitude em basis points
-            sign_daily: game.sign_daily, // Field 6 = sinal (-1, 0, 1)
-            magnitude_bps_weekly: game.magnitude_bps_weekly,
-            sign_weekly: game.sign_weekly,
-            n_spins_daily: 0, // Não temos número de spins ainda
-            n_spins_weekly: 0
+            rtp_daily: game.rtp_calculated_daily,
+            rtp_weekly: game.rtp_calculated_weekly,
+            image_path: game.image_url,
+            timestamp: data.timestamp
           });
-
-          // Salva janela diária (se disponível)
-          if (processed.daily) {
-            Game.upsertRTPWindow({
-              game_id: game.game_id,
-              window: '24h',
-              ...processed.daily
-            });
-          }
-
-          // Salva janela semanal (se disponível)
-          if (processed.weekly) {
-            Game.upsertRTPWindow({
-              game_id: game.game_id,
-              window: '7d',
-              ...processed.weekly
-            });
-          }
-
-          processedGames.push({
-            ...game,
-            ...processed
-          });
-
-        } catch (gameError) {
-          console.error(`⚠️  Erro ao processar jogo ${game.game_id}:`, gameError.message);
+        } catch (dbError) {
+          // Ignora erros de banco - não é crítico
         }
       }
 
-      // Gera rankings para ambas as janelas
-      try {
-        const rankings24h = RTPCalculator.generateRankings(processedGames, '24h', 10);
-        const rankings7d = RTPCalculator.generateRankings(processedGames, '7d', 10);
-
-        // Salva rankings diários
-        const dailyRankings = [
-          ...rankings24h.best.map((g, idx) => ({
-            window: '24h',
-            game_id: g.game_id,
-            rank_type: 'best',
-            position: idx + 1,
-            score: g.score,
-            delta_post_pp: g.delta_post_pp,
-            confidence: g.confidence
-          })),
-          ...rankings24h.worst.map((g, idx) => ({
-            window: '24h',
-            game_id: g.game_id,
-            rank_type: 'worst',
-            position: idx + 1,
-            score: g.score,
-            delta_post_pp: g.delta_post_pp,
-            confidence: g.confidence
-          }))
-        ];
-
-        // Salva rankings semanais
-        const weeklyRankings = [
-          ...rankings7d.best.map((g, idx) => ({
-            window: '7d',
-            game_id: g.game_id,
-            rank_type: 'best',
-            position: idx + 1,
-            score: g.score,
-            delta_post_pp: g.delta_post_pp,
-            confidence: g.confidence
-          })),
-          ...rankings7d.worst.map((g, idx) => ({
-            window: '7d',
-            game_id: g.game_id,
-            rank_type: 'worst',
-            position: idx + 1,
-            score: g.score,
-            delta_post_pp: g.delta_post_pp,
-            confidence: g.confidence
-          }))
-        ];
-
-        Game.updateRankings('24h', dailyRankings);
-        Game.updateRankings('7d', weeklyRankings);
-
-        console.log('📊 Rankings atualizados (24h e 7d)');
-      } catch (rankError) {
-        console.error('⚠️  Erro ao gerar rankings:', rankError.message);
-      }
-
-      // Mapeia para o formato esperado pelo frontend
-      const formattedGames = processedGames.map(g => ({
-        ...g,
-        // Adiciona campos compatíveis com o frontend (em porcentagem)
-        rtp_calculated_daily: g.daily?.rtp_observado ? g.daily.rtp_observado * 100 : null,
-        rtp_calculated_weekly: g.weekly?.rtp_observado ? g.weekly.rtp_observado * 100 : null
-      }));
+      // Cache assíncrono de imagens (não bloqueia envio)
+      imageCacheService.cacheGameImages(processedGames, 3).catch(err => {
+        console.error('⚠️  Erro no cache de imagens:', err.message);
+      });
 
       // Armazena dados processados para novas conexões
-      lastProcessedData = formattedGames;
+      lastProcessedData = processedGames;
 
-      // Broadcast os dados processados para os clientes
       // Debug: mostra campos importantes do primeiro jogo
-      if (formattedGames.length > 0) {
-        const game = formattedGames[0];
+      if (processedGames.length > 0) {
+        const game = processedGames[0];
         console.log('📤 Dados do primeiro jogo:', {
           game_id: game.game_id,
           game_name: game.game_name,
+          provider: game.provider,
           magnitude_bps_daily: game.magnitude_bps_daily,
           sign_daily: game.sign_daily,
+          rtp_calculated_daily: game.rtp_calculated_daily,
           magnitude_bps_weekly: game.magnitude_bps_weekly,
           sign_weekly: game.sign_weekly,
-          rtp_observado_daily: game.daily?.rtp_observado,
-          rtp_observado_weekly: game.weekly?.rtp_observado,
-          rtp_calculated_daily: game.rtp_calculated_daily,
           rtp_calculated_weekly: game.rtp_calculated_weekly,
-          image_url: game.image_url,
-          has_daily: !!game.daily,
-          has_weekly: !!game.weekly
+          image_url: game.image_url
         });
       }
 
+      // Broadcast os dados processados para os clientes
       broadcast({
         type: 'update',
-        data: formattedGames,
+        data: processedGames,
         timestamp: data.timestamp
       });
 
-      // Salva também no banco legado para histórico
-      try {
-        // Mapeia processedGames para o formato esperado pelo banco legado
-        const legacyGames = processedGames.map(g => ({
-          game_id: g.game_id,
-          game_name: g.game_name,
-          provider: g.provider,
-          rtp_daily: g.daily?.rtp_observado ? g.daily.rtp_observado * 100 : null, // Converte para %
-          rtp_weekly: g.weekly?.rtp_observado ? g.weekly.rtp_observado * 100 : null, // Converte para %
-          image_path: g.image_path
-        }));
-
-        GameRTP.insertBatch(legacyGames);
-        console.log('💾 Dados salvos no banco de dados');
-
-        // Cache de imagens em background (não bloqueia o processamento)
-        imageCacheService.cacheGameImages(processedGames, 5).catch(err => {
-          console.error('⚠️  Erro ao cachear imagens:', err.message);
-        });
-      } catch (dbError) {
-        console.error('⚠️  Erro ao salvar no banco legado:', dbError.message);
-      }
+      console.log('✅ Dados enviados para clientes via WebSocket');
     } else {
       console.log('⚠️  Nenhum jogo extraído dos dados');
     }
