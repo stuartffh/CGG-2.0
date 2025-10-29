@@ -25,37 +25,43 @@ RETRY_DELAY=2000
 HOST=0.0.0.0
 ```
 
-### Frontend (Build Arguments)
+### Frontend - Configuração do Domínio do Backend
 
-O Easypanel precisa passar estas variáveis durante o **BUILD** do Docker.
+**IMPORTANTE:** A URL do backend já está configurada no arquivo `frontend/.env.production` e é automaticamente usada durante o build:
 
-Configure na seção **Build Args** ou **Environment** (dependendo da sua versão do Easypanel):
-
-#### Opção 1: Usar URL completa do WebSocket
-```env
+```
 VITE_API_URL=wss://rtp-api.zapchatbr.com
 ```
 
-#### Opção 2: Usar apenas o domínio (protocolo será detectado automaticamente)
-```env
-VITE_BACKEND_DOMAIN=rtp-api.zapchatbr.com
-```
+#### Como Alterar o Domínio do Backend:
+
+Se você precisar usar um domínio diferente de `rtp-api.zapchatbr.com`:
+
+1. Edite o arquivo `frontend/.env.production` no repositório
+2. Altere a linha `VITE_API_URL=wss://SEU-DOMINIO-AQUI.com`
+3. Faça commit e push das alterações
+4. O Easypanel fará rebuild automaticamente
+
+**Não é necessário** adicionar variáveis `VITE_*` no painel de Environment Variables do Easypanel, pois elas já estão no código fonte.
+
+#### Opção Avançada: Sobrescrever via Build Arguments
+
+Se você quiser sobrescrever o domínio sem editar o código:
+
+- **Se o Easypanel suportar Build Args**, adicione:
+  ```
+  VITE_API_URL=wss://seu-dominio.com
+  ```
 
 **IMPORTANTE:**
-- Use `wss://` se seu backend estiver em HTTPS
-- Use `ws://` se seu backend estiver em HTTP
-- Se você definir apenas `VITE_BACKEND_DOMAIN`, o protocolo será detectado automaticamente baseado no protocolo do frontend (https → wss, http → ws)
+- Use `wss://` se seu backend estiver em HTTPS (recomendado)
+- Use `ws://` apenas se seu backend estiver em HTTP (não seguro)
 
 ### Exemplo de Configuração Completa no Easypanel
 
 #### Para o domínio `rtp-games.zapchatbr.com` (Frontend) e `rtp-api.zapchatbr.com` (Backend):
 
-**Build Arguments (durante o build do Docker):**
-```
-VITE_BACKEND_DOMAIN=rtp-api.zapchatbr.com
-```
-
-**Environment Variables (runtime):**
+**Environment Variables (apenas runtime - adicione no painel do Easypanel):**
 ```
 PORT=3001
 UPDATE_INTERVAL=3000
@@ -64,6 +70,8 @@ MAX_RETRIES=3
 RETRY_DELAY=2000
 HOST=0.0.0.0
 ```
+
+**NOTA:** Não é necessário adicionar `VITE_*` nas variáveis de ambiente do Easypanel. A URL do backend está definida em `frontend/.env.production`.
 
 ## Verificação
 
