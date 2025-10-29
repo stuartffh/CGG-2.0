@@ -1,27 +1,37 @@
 #!/bin/sh
-set -e
+set -eu
 
 echo "=================================================="
 echo "  CGG RTP Monitor - Starting Services (Vite Fix)"
 echo "  Environment: ${NODE_ENV:-production}"
 echo "=================================================="
 
+# IDs dos processos iniciados
+BACKEND_PID=""
+FRONTEND_PID=""
+TAIL_PID=""
+
 # Função para handle de sinais (graceful shutdown)
 cleanup() {
     echo ""
     echo "Shutting down services..."
 
-    if [ ! -z "$BACKEND_PID" ]; then
+    if [ -n "$TAIL_PID" ]; then
+        echo "Stopping log tail (PID: $TAIL_PID)..."
+        kill -TERM "$TAIL_PID" 2>/dev/null || true
+    fi
+
+    if [ -n "$BACKEND_PID" ]; then
         echo "Stopping backend (PID: $BACKEND_PID)..."
         kill -TERM "$BACKEND_PID" 2>/dev/null || true
     fi
 
-    if [ ! -z "$FRONTEND_PID" ]; then
+    if [ -n "$FRONTEND_PID" ]; then
         echo "Stopping frontend (PID: $FRONTEND_PID)..."
         kill -TERM "$FRONTEND_PID" 2>/dev/null || true
     fi
 
-    wait
+    wait || true
     echo "Services stopped"
     exit 0
 }
@@ -34,7 +44,13 @@ mkdir -p /app/logs /app/backend/data
 
 # Inicia o backend em background
 echo ""
-echo "Starting backend on port ${PORT:-3001}..."
+PORT="${PORT:-3001}"
+HOST="${HOST:-0.0.0.0}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+FRONTEND_CONFIG="${FRONTEND_CONFIG:-}"
+FRONTEND_STRICT_PORT="${FRONTEND_STRICT_PORT:-true}"
+
+echo "Starting backend on port ${PORT}..."
 cd /app/backend
 node src/server.js > /app/logs/backend.log 2>&1 &
 BACKEND_PID=$!
@@ -53,14 +69,18 @@ fi
 
 # Inicia o frontend em background
 echo ""
-echo "Starting frontend on port 5173..."
+echo "Starting frontend on port ${FRONTEND_PORT}..."
 cd /app/frontend
 
 # Instala Vite se não estiver disponível
 echo "Checking Vite availability..."
-if ! npx vite --version &> /dev/null; then
-    echo "Installing Vite..."
-    npm install vite@latest
+if ! npx vite --version >/dev/null 2>&1; then
+    echo "Installing Vite runtime dependency..."
+    npm install --no-save vite@latest >/app/logs/frontend-install.log 2>&1 || {
+        echo "ERROR: Failed to install Vite runtime dependency!"
+        cat /app/logs/frontend-install.log
+        exit 1
+    }
 fi
 
 # Verifica se o build existe
@@ -72,12 +92,19 @@ fi
 
 # Inicia o Vite preview
 echo "Starting Vite preview server..."
-npx vite preview \
-  --host ${HOST:-0.0.0.0} \
-  --port 5173 \
-  --strictPort false \
-  --cors \
-  > /app/logs/frontend.log 2>&1 &
+
+set -- --host "$HOST" --port "$FRONTEND_PORT" --logLevel info
+case "$(printf '%s' "$FRONTEND_STRICT_PORT" | tr '[:upper:]' '[:lower:]')" in
+    1|true|yes|on)
+        set -- "$@" --strictPort
+        ;;
+esac
+
+if [ -n "$FRONTEND_CONFIG" ]; then
+    set -- "$@" --config "$FRONTEND_CONFIG"
+fi
+
+npx vite preview "$@" > /app/logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 
@@ -95,9 +122,9 @@ fi
 echo ""
 echo "=================================================="
 echo "  Services Running Successfully:"
-echo "  - Backend:  http://${HOST:-0.0.0.0}:${PORT:-3001}"
-echo "  - Frontend: http://${HOST:-0.0.0.0}:5173"
-echo "  - WebSocket: ws://${HOST:-0.0.0.0}:${PORT:-3001}"
+echo "  - Backend:  http://${HOST}:${PORT}"
+echo "  - Frontend: http://${HOST}:${FRONTEND_PORT}"
+echo "  - WebSocket: ws://${HOST}:${PORT}"
 echo "=================================================="
 echo ""
 echo "Logs available at:"

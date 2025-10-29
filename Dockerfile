@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    sqlite
+    sqlite \
+    wget
 
 WORKDIR /app
 

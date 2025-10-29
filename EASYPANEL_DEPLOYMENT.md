@@ -25,11 +25,15 @@ NODE_ENV=production
 PORT=3001
 HOST=0.0.0.0
 UPDATE_INTERVAL=3000
+# Opcional: configurações de preview do Vite
+# FRONTEND_PORT=5173
+# FRONTEND_STRICT_PORT=true
+# FRONTEND_CONFIG=vite.config.js
 ```
 
 ### 4. Portas
 - **Backend**: `3001` (HTTP/WebSocket)
-- **Frontend**: `5173` (HTTP)
+- **Frontend**: `5173` (HTTP) — pode ser alterada via `FRONTEND_PORT`
 
 ### 5. Volumes (Opcional)
 - **Dados**: `/app/backend/data` → Persistência do banco SQLite
@@ -49,7 +53,7 @@ UPDATE_INTERVAL=3000
 - ✅ **Node.js 18 Alpine** (imagem leve)
 - ✅ **Usuário não-root** para segurança
 - ✅ **Health check** integrado
-- ✅ **Graceful shutdown** suportado
+- ✅ **Graceful shutdown** suportado (inclui encerramento do tail de logs)
 - ✅ **Logs estruturados**
 
 ### Dependências do Sistema:
@@ -104,7 +108,7 @@ Cannot find package 'vite' imported from /app/frontend/node_modules/.vite-temp/v
 **Solução:**
 - ✅ **Configurado**: Vite movido para `dependencies` no `package.json`
 - ✅ **Script corrigido**: `start-vite-fix.sh` com verificação automática
-- ✅ **Instalação automática**: Vite é instalado se não estiver disponível
+- ✅ **Instalação automática**: Vite é instalado se não estiver disponível (log em `/app/logs/frontend-install.log`)
 - ✅ **Verificação de build**: Confirma que `dist/` existe antes de iniciar
 
 **Se ainda ocorrer:**
@@ -158,7 +162,7 @@ tail -f /app/logs/frontend.log
 
 ### Recomendações:
 - 🔐 Usar HTTPS em produção
-- 🔐 Configurar CORS adequadamente
+- 🔐 Configurar CORS adequadamente no build do frontend
 - 🔐 Monitorar logs regularmente
 - 🔐 Atualizar dependências periodicamente
 
