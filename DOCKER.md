@@ -104,6 +104,10 @@ docker cp cgg-monitor:/app/logs ./logs
 | `NODE_ENV` | `production` | Ambiente de execução |
 | `PORT` | `3001` | Porta do backend |
 | `UPDATE_INTERVAL` | `3000` | Intervalo de atualização (ms) |
+| `FETCH_TIMEOUT` | `15000` | Timeout para requisições ao CGG (ms) |
+| `MAX_RETRIES` | `3` | Número máximo de tentativas em caso de erro |
+| `RETRY_DELAY` | `2000` | Delay base entre tentativas (ms, com exponential backoff) |
+| `DEBUG_PROTOBUF` | `false` | Ativa logs detalhados de debug do protobuf |
 
 ## Health Check
 

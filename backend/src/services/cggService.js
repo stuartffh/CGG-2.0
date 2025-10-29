@@ -6,6 +6,52 @@ class CGGService {
     this.baseUrl = 'https://cgg.bet.br/casinogo/widgets/v2/live-rtp';
     // Cookies do CloudFlare são opcionais - a API funciona sem eles
     this.cookies = '';
+    // Timeout e retry configuráveis via env
+    this.fetchTimeout = parseInt(process.env.FETCH_TIMEOUT) || 15000; // 15s padrão
+    this.maxRetries = parseInt(process.env.MAX_RETRIES) || 3; // 3 tentativas padrão
+    this.retryDelay = parseInt(process.env.RETRY_DELAY) || 2000; // 2s entre tentativas
+  }
+
+  // Helper para fazer fetch com timeout
+  async fetchWithTimeout(url, options, timeout) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error(`Request timeout after ${timeout}ms`);
+      }
+      throw error;
+    }
+  }
+
+  // Helper para fazer fetch com retry
+  async fetchWithRetry(url, options, retries = this.maxRetries) {
+    let lastError;
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await this.fetchWithTimeout(url, options, this.fetchTimeout);
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < retries) {
+          // Aguarda antes de tentar novamente (exponential backoff)
+          const delay = this.retryDelay * attempt;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   // Cabeçalhos padrão para requisições anônimas
@@ -44,7 +90,7 @@ class CGGService {
     try {
       const body = Buffer.from([0x08, 0x01, 0x10, 0x02]);
 
-      const response = await fetch(this.baseUrl, {
+      const response = await this.fetchWithRetry(this.baseUrl, {
         method: 'POST',
         headers: this.getHeaders(),
         body: body
@@ -70,7 +116,7 @@ class CGGService {
     try {
       const body = Buffer.from([0x08, 0x02, 0x10, 0x02]);
 
-      const response = await fetch(this.baseUrl, {
+      const response = await this.fetchWithRetry(this.baseUrl, {
         method: 'POST',
         headers: this.getHeaders(),
         body: body
